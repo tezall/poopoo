@@ -1,0 +1,260 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="UTF-8">
+<title>Baymax v18</title>
+
+<link href="https://fonts.googleapis.com/css2?family=Cinzel:wght@700&family=Orbitron:wght@600&display=swap" rel="stylesheet">
+<script src="https://cdn.jsdelivr.net/npm/canvas-confetti@1.6.0/dist/confetti.browser.min.js"></script>
+
+<style>
+body{
+margin:0;
+overflow:hidden;
+background:black;
+color:orange;
+text-align:center;
+font-family:'Orbitron',sans-serif;
+}
+
+#bg{
+position:fixed;
+width:100%;
+height:100%;
+object-fit:cover;
+opacity:0.25;
+z-index:-1;
+}
+
+.glow{
+text-shadow:0 0 8px orange,0 0 20px orange,0 0 40px darkorange;
+}
+
+#gothic{
+font-family:'Cinzel',serif;
+letter-spacing:3px;
+}
+
+.screen{
+position:absolute;
+width:100%;
+height:100%;
+display:flex;
+flex-direction:column;
+justify-content:center;
+align-items:center;
+}
+
+.hidden{display:none;}
+
+#barBox{
+width:60%;
+height:25px;
+border:2px solid orange;
+margin-top:20px;
+}
+
+#bar{
+height:100%;
+width:0%;
+background:linear-gradient(90deg,orange,red);
+}
+
+button{
+padding:20px 50px;
+font-size:26px;
+background:black;
+color:orange;
+border:2px solid orange;
+cursor:pointer;
+transition:0.3s;
+font-family:'Cinzel',serif;
+}
+
+button:hover{
+background:orange;
+color:black;
+box-shadow:0 0 25px orange;
+}
+
+canvas{
+background:black;
+border:2px solid orange;
+}
+
+.balloon{
+position:absolute;
+bottom:-150px;
+width:60px;
+animation:float 8s linear infinite;
+}
+
+@keyframes float{
+from{transform:translateY(0);}
+to{transform:translateY(-120vh);}
+}
+
+.heart{
+font-size:80px;
+animation:pulse 1.5s infinite;
+}
+
+@keyframes pulse{
+0%{transform:scale(1);}
+50%{transform:scale(1.2);}
+100%{transform:scale(1);}
+}
+</style>
+</head>
+<body>
+
+<img src="MeetBaymax.gif" id="bg">
+<audio id="audio" src="baymax-audio3.mp3"></audio>
+
+<!-- LOADING -->
+<div class="screen" id="loading">
+<h1 id="gothic" class="glow">BAYMAX VERSION 18 LOADING...</h1>
+<div id="barBox"><div id="bar"></div></div>
+</div>
+
+<!-- SCAN COMPLETE -->
+<div class="screen hidden" id="scan">
+<h1 id="gothic" class="glow">SYSTEM SCAN COMPLETE</h1>
+<button onclick="enterSite()">Enter</button>
+</div>
+
+<!-- MAIN -->
+<div class="screen hidden" id="main">
+<button onclick="showLove()" class="glow">Wifey Says Click Here</button>
+<div id="loveText"></div>
+<button id="playBtn" class="hidden" onclick="startGame()">Do You Want To Play?</button>
+</div>
+
+<!-- GAME -->
+<div class="screen hidden" id="game">
+<h2 class="glow">Score 18 To Unlock Your Gift 🏀</h2>
+<canvas id="court" width="600" height="400"></canvas>
+<p>Score: <span id="score">0</span></p>
+<button id="nextBtn" class="hidden" onclick="finalGift()">Next</button>
+</div>
+
+<!-- FINAL -->
+<div class="screen hidden" id="final">
+<div class="heart glow">❤️</div>
+<h1 id="gothic" class="glow">I LOVE U LEECHAD POPO PUPPY</h1>
+</div>
+
+<script>
+
+let audio=document.getElementById("audio")
+
+// LOADING
+let progress=0
+let bar=document.getElementById("bar")
+
+let loadInt=setInterval(()=>{
+progress++
+bar.style.width=progress+"%"
+if(progress>=100){
+clearInterval(loadInt)
+document.getElementById("loading").classList.add("hidden")
+document.getElementById("scan").classList.remove("hidden")
+}
+},30)
+
+function enterSite(){
+audio.play()
+document.getElementById("scan").classList.add("hidden")
+document.getElementById("main").classList.remove("hidden")
+}
+
+// LOVE SCREEN
+function showLove(){
+confetti({particleCount:200,spread:100})
+document.getElementById("loveText").innerHTML=
+"<h1 class='glow' id='gothic'>I LOOOVEEEYOOOUUUU 🖤<br>HAPPY BIRTHDAY SHAURYAAA!!!</h1>"
+document.getElementById("playBtn").classList.remove("hidden")
+}
+
+// GAME
+function startGame(){
+document.getElementById("main").classList.add("hidden")
+document.getElementById("game").classList.remove("hidden")
+
+let canvas=document.getElementById("court")
+let ctx=canvas.getContext("2d")
+
+let ball={x:100,y:300,r:15,vx:0,vy:0}
+let gravity=0.4
+let score=0
+let dragging=false
+
+canvas.addEventListener("mousedown",e=>{
+dragging=true
+ball.x=e.offsetX
+ball.y=e.offsetY
+})
+
+canvas.addEventListener("mouseup",e=>{
+dragging=false
+ball.vx=(e.offsetX-ball.x)/5
+ball.vy=(e.offsetY-ball.y)/5
+})
+
+function update(){
+ctx.clearRect(0,0,600,400)
+
+if(!dragging){
+ball.vy+=gravity
+ball.x+=ball.vx
+ball.y+=ball.vy
+
+if(ball.y+ball.r>400){
+ball.y=385
+ball.vy*=-0.7
+}
+
+if(ball.x>250 && ball.x<350 && ball.y<80){
+score++
+document.getElementById("score").innerText=score
+confetti({particleCount:50,spread:70})
+ball.x=100;ball.y=300;ball.vx=0;ball.vy=0
+if(score==18){
+document.getElementById("nextBtn").classList.remove("hidden")
+}
+}
+}
+
+ctx.fillStyle="orange"
+ctx.beginPath()
+ctx.arc(ball.x,ball.y,ball.r,0,Math.PI*2)
+ctx.fill()
+
+ctx.fillRect(250,60,100,10)
+
+requestAnimationFrame(update)
+}
+update()
+}
+
+// FINAL
+function finalGift(){
+document.getElementById("game").classList.add("hidden")
+document.getElementById("final").classList.remove("hidden")
+
+confetti({particleCount:400,spread:200})
+
+// balloons
+for(let i=0;i<15;i++){
+let b=document.createElement("div")
+b.className="balloon"
+b.innerHTML="🎈"
+b.style.left=Math.random()*100+"vw"
+b.style.animationDuration=(5+Math.random()*5)+"s"
+document.body.appendChild(b)
+}
+}
+
+</script>
+</body>
+</html>
